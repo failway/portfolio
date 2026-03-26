@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
     unoptimized: true,
   },
   basePath: "/portfolio",
+  trailingSlash: true,
 };
 
 export default nextConfig;
