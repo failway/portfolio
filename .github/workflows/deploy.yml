@@ -2,7 +2,7 @@ name: Deploy Next.js site to Pages
 
 on:
   push:
-    branches: ["main"] # Убедись, что твоя ветка называется main
+    branches: ["master"] # Убедись, что твоя ветка называется main
 
 permissions:
   contents: read
