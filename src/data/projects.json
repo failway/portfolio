@@ -1,0 +1,170 @@
+[
+  {
+    "id": "can-servo-control",
+    "title": "Can-Servo",
+    "description": "Серво-система с управлением по CAN (Cyphal) и обратной связью в реальном времени.",
+    "fullDescription": "Разработана серво-система реального времени на базе RP2040 с использованием двух ядер для разделения задач. Первое ядро обрабатывает CAN-коммуникацию по протоколу Cyphal, принимая команды позиционирования от внешних устройств. Второе ядро отвечает за управление двигателем через библиотеку SimpleFOC, обеспечивая точное, плавное и стабильное управление.\n\nРеализована двусторонняя связь: система передаёт телеметрию, включая текущее положение и заданную позицию, что позволяет интегрировать устройство в распределённые системы управления и мониторинга.\n\nОсобое внимание уделено синхронизации между ядрами, обработке данных в реальном времени и устойчивости к нагрузке. Проект демонстрирует навыки работы с embedded-системами, CAN-протоколами, многопоточностью и управлением электродвигателями.",
+    "image": "/can-servo-control/cnsrv1.jpg",
+    "tags": ["RP2040", "CAN", "C/C++", "SimpleFOC", "Cyphal"],
+      "media": [
+      { "type": "image", "url": "/can-servo-control/cnsrv1.jpg" },
+      { "type": "video", "url": "/can-servo-control/cnsrv_vid.mp4" },
+      { "type": "image", "url": "/can-servo-control/cnsrv2.jpg" }
+    ],
+    "github": "https://github.com/failway/",
+    "private": true,
+    "status": "Completed",
+    "date": "2024-12-20",
+    "lang": "C/C++",
+    "code": "#include <Arduino.h>\n#include \"pico/multicore.h\"\n#include \"config/config.h\"\n#include \"motor/motor_task.h\"\n#include \"can/can_cyphal.h\"\n#include \"memory/o1heap_alloc.h\"\n\nvoid setup() {\n    Serial.begin(115200);\n    delay(5000);\n\n    // Инициализация памяти\n    o1heap_init_global();\n\n    // Запуск управления мотором на втором ядре\n    multicore_launch_core1(motorTask);\n\n    // CAN / Cyphal на первом ядре\n    setup_can();\n}\n\nvoid loop() {}\n\n// -------- MOTOR TASK (core1) --------\nvoid motorTask() {\n    motor.foc_modulation   = FOCModulationType::SpaceVectorPWM;\n    motor.torque_controller = TorqueControlType::voltage;\n    motor.controller       = MotionControlType::angle;\n    motor.voltage_sensor_align = MOTOR_VOLTAGE_SENSOR_ALIGN;\n    motor.zero_electric_angle = MOTOR_ZERO_ELECT_ANGLE;\n    motor.sensor_direction = Direction::CW;\n    motor.voltage_limit = MOTOR_VOLTAGE_LIMIT;\n    motor.velocity_limit = MOTOR_VELOCITY_LIMIT_HOME;\n\n    motor.PID_velocity.P = PID_VELOCITY_P;\n    motor.PID_velocity.I = PID_VELOCITY_I;\n\n    motor.init();\n\n    // Поиск нулевой позиции (концевик)\n    float search_speed = HOMING_SPEED_BASE * MOTOR_SIDE_SIGN;\n    while (digitalRead(18) == HIGH){\n        motor.loopFOC();\n        motor.move(search_speed);\n        temp_angle = sensor.getAngle();\n    }\n\n    // Калибровка\n    obnal(temp_angle);\n    motor.move(ANGLE_MIN);\n    motor.velocity_limit = MOTOR_VELOCITY_LIMIT_WORK;\n    motor.init();\n\n    // Основной цикл управления\n    while (true) {\n        motor.loopFOC();\n\n        if (value_can_tangle != 0) {\n            target_angle = mapDouble(value_can_tangle, PWM_MIN, PWM_MAX, ANGLE_MIN, ANGLE_MAX);\n        } else {\n            target_angle = ANGLE_MIN;\n        }\n\n        motor.move(target_angle);\n    }\n}\n\n// -------- CAN / CYPHAL --------\nstatic void cyphal_rx_callback(CanardRxTransfer* transfer) {\n    if (transfer->metadata.port_id == PORT_ID_CMD_VEC31) {\n        zubax_primitive_real16_Vector31_1_0 msg = {0};\n        size_t inout_size = transfer->payload_size;\n\n        if (zubax_primitive_real16_Vector31_1_0_deserialize_(\n                &msg,\n                (const uint8_t*)transfer->payload,\n                &inout_size) >= 0) {\n\n            value_can_tangle = msg.value[INDEX_SETPOINT];\n        }\n    }\n\n    // Освобождение памяти\n    o1heapFree(o1heap_get_instance(), transfer->payload);\n}\n\nstatic void can_rx_callback(struct can2040* cd, uint32_t notify, struct can2040_msg* msg) {\n    if (notify & CAN2040_NOTIFY_RX) {\n        uint32_t can_id = msg->id & 0x1FFFFFFF;\n\n        CanardFrame frame = {\n            .extended_can_id = can_id,\n            .payload_size    = msg->dlc,\n            .payload         = msg->data\n        };\n\n        CanardRxTransfer transfer;\n        CanardRxSubscription* sub = nullptr;\n\n        int8_t res = canardRxAccept(&canard, micros_now_cyp(), &frame, 0, &transfer, &sub);\n        if (res > 0) {\n            cyphal_rx_callback(&transfer);\n        }\n    }\n}\n"
+  },
+  {
+    "id": "telegram-bot-for-studio",
+    "title": "Telegram finance management bot",
+    "description": "Телеграм-бот для управления финансами студии звукозаписи.",
+    "fullDescription": "Разработан Telegram-бот на Python с использованием aiogram 3 для автоматизации финансового учёта студии. Пользователи могут вносить данные о доходах и расходах, формируя единую систему контроля финансовых операций.\n\nРеализована ролевая модель (администратор / сотрудник), обеспечивающая разграничение доступа и управление данными. Бот поддерживает сбор и хранение информации, автоматическое формирование отчётов и экспорт данных в Excel в любой момент времени.\n\nРешение значительно упрощает внутренние процессы, снижает количество ручных операций и повышает прозрачность финансового учёта.",
+    "image": "/tgbot/tgbot2.png",
+    "tags": ["Python", "Telegram Bot", "aiogram", "Excel"],
+    "media": [
+      { "type": "image", "url": "/tgbot/tgbot2.png" },
+      { "type": "image", "url": "/tgbot/tgbot_1.png" }
+    ],
+    "github": "https://github.com/failway/",
+    "private": true,
+    "status": "Completed",
+    "date": "2025-01-20",
+    "lang": "Python",
+    "code": "elif data.startswith(\"time_\"):\n    period = data.split(\"_\")[1]\n    now2 = datetime.now()\n    now = datetime.now().date()\n    period_mapping = {\n        \"week\": (now2 - timedelta(days=7)).replace(hour=0, minute=0, second=0, microsecond=0),\n        \"month\": (now2 - relativedelta(months=1)).replace(hour=0, minute=0, second=0, microsecond=0),\n        \"qu\": (now2 - relativedelta(months=3)).replace(hour=0, minute=0, second=0, microsecond=0),\n        \"year\": (now2 - relativedelta(years=1)).replace(hour=0, minute=0, second=0, microsecond=0)\n    }\n\n    start_date = period_mapping[period].strftime(\"%Y-%m-%d %H:%M:%S\")\n    data = await state.get_data()\n    adm_lvl = await db.get_admin_user(data[\"user_id\"])\n    usl = await db.get_time_visit(adm_lvl[0][0], data[\"user_id\"], start_date)\n    unic_cl = await db.get_unic_clients(adm_lvl[0][0], data[\"user_id\"], start_date)\n\n    print(f\"{now.strftime('%d.%m.%Y')} - {start_date}\")\n\n    time_txt = ''\n    if period == 'week':\n        week_ago = now - timedelta(days=7)\n        time_txt = f\" за неделю({week_ago.strftime('%d.%m.%Y')} - {now.strftime('%d.%m.%Y')})\"\n    elif period == 'month':\n        month_ago = now - relativedelta(months=1)\n        time_txt = f\" за месяц({month_ago.strftime('%d.%m.%Y')} - {now.strftime('%d.%m.%Y')})\"\n    elif period == 'qu':\n        quarter_ago = now - relativedelta(months=3)\n        time_txt = f\" за квартал({quarter_ago.strftime('%d.%m.%Y')} - {now.strftime('%d.%m.%Y')})\"\n    elif period == 'year':\n        year_ago = now - relativedelta(years=1)\n        time_txt = f\" за год({year_ago.strftime('%d.%m.%Y')} - {now.strftime('%d.%m.%Y')})\"\n\n    txt = f\"Статистика посещения{time_txt}\\n\\nКол-во посещения студии: {str(len(usl))}\\nКол-во уникальных клиентов: {str(len(unic_cl))}\"\n\n    await callback_query.message.edit_text(txt)\n    await callback_query.message.edit_reply_markup(reply_markup=await but.get_time_visits())"
+  },
+  {
+    "id": "site-for-aviapanel",
+    "title": "Сайт для авиа-приборов",
+    "description": "Сайт для симуляторных авиаприборов.",
+    "image": "/site-avia/avia1.jpg",
+    "fullDescription": "Разработан backend сайта для продажи симуляторных авиаприборов на Django. Реализована ключевая e-commerce логика: каталог товаров, корзина, оформление заказов и пользовательские страницы.\n\nИнтегрированы сторонние сервисы — API онлайн-кассы для обработки платежей и API CDEK для расчёта стоимости и управления доставкой.\n\nПроект отражает опыт построения серверной логики, интеграции внешних API и разработки коммерческих веб-сервисов.",
+    "tags": ["HTML", "CSS", "Python", "Django"],
+    "media": [
+      { "type": "image", "url": "/site-avia/avia1.jpg" },
+      { "type": "image", "url": "/site-avia/avia2.png" },
+      { "type": "image", "url": "/site-avia/avia3.png" },
+      { "type": "image", "url": "/site-avia/avia4.png" }
+    ],
+    "github": "https://github.com/failway/",
+    "private": true,
+    "status": "Closed",
+    "date": "2025-01-30",
+    "lang": "Python",
+    "code": ""
+  },
+  {
+    "id": "gui-for-vtol",
+    "title": "GUI для VTOL",
+    "description": "GUI-приложение для управления VTOL-дроном и визуализации телеметрии.",
+    "fullDescription": "Разработано GUI-приложение на PyQt6 для управления VTOL-дроном. Программа подключается к дрону через MAVLink, позволяет ставить точки на карте, задавать миссии через собственные расширения и получать полную телеметрию.\n\nСинхронизация с Jetson на борту, выбор объектов для трекинга, передача видео в реальном времени через OpenCV + GStreamer, а также визуализация 3D-модели дрона с отображением текущей позиции и углов Yaw, Pitch, Roll.\n\nПроект демонстрирует опыт разработки GUI, работы с аппаратурой и протоколами связи, а также реализацию real-time визуализации и управления сложными системами.",
+    "image": "/gui/gui2.png",
+    "tags": ["Python", "PyQt", "MAVLink", "JS", "OpenCV"],
+    "media": [
+      { "type": "image", "url": "/gui/gui2.png" },
+      { "type": "image", "url": "/gui/gui1.png" },
+      { "type": "video", "url": "/gui/gui_vid1.mp4" }
+    ],
+    "github": "https://github.com/failway/colibri_gui_release",
+    "private": false,
+    "status": "Completed",
+    "date": "2025-03-02",
+    "lang": "Python/JS",
+    "code": "# d:\\ssd\\server\\GUI\\app\\views\\main_window.py\n\n    def open_map_window(self):\n        \"\"\"Открыть карту в отдельном окне (при клике на overlay).\"\"\"\n        self.logger_file.log(\"INFO\", f\"Open map Window\")\n        if getattr(self, \"map_on_window\", False):\n            self.logger_file.log(\"INFO\", f\"OPEN map window retry\")\n            return\n        try:\n            try:\n                self.web_view.setParent(None)\n            except Exception as e:\n                self.logger_file.log(\"ERROR\", f\"Open map window error\")\n                self.logger_file.log_exception(e)\n\n            self.map_window = MapWindow(parent=self, title=\"Colibri Map\")\n            self.map_window.resize(800, 600)\n            try:\n                self.web_view.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, False)\n                self.web_view.setFocus()\n                try:\n                    self.logger_file.log(\"INFO\", f\"OFF mouse focus\")\n                    self.web_view.page().runJavaScript(\"window.AUTO_FOLLOW = false;\")\n                except Exception as e:\n                    self.logger_file.log(\"ERROR\", f\"OFF mouse focus error\")\n                    self.logger_file.log_exception(e)\n\n                js_enable = \"\"\"\n                (function(){\n                    try{\n                        if (window.map) {\n                            if (map.scrollZoom && map.scrollZoom.enable) map.scrollZoom.enable();\n                            if (map.dragPan && map.dragPan.enable) map.dragPan.enable();\n                            if (map.touchZoomRotate && map.touchZoomRotate.enable) map.touchZoomRotate.enable();\n                        }\n                        if (typeof window.setInteractive === 'function') window.setInteractive(true);\n                    }catch(e){}\n                })();\n                \"\"\"\n                self.web_view.page().runJavaScript(js_enable)\n                self.logger_file.log(\"INFO\", f\"OFF mouse focus JS TRUE\")\n            except Exception as e:\n                self.logger_file.log(\"ERROR\", f\"OFF mouse focus JS error\")\n                self.logger_file.log_exception(e)\n\n            self.map_window.set_map_widget(self.web_view)\n            try:\n                self.map_window.closed.connect(self.restore_map_to_main)\n            except Exception as e:\n                self.logger_file.log(\"ERROR\", f\"Connect close window error\")\n                self.logger_file.log_exception(e)\n\n            self.map_window.show()\n            self.map_on_window = True\n            try:\n                if getattr(self, \"_map_blocker\", None):\n                    self._map_blocker.hide()\n            except Exception as e:\n                self.logger_file.log(\"ERROR\", f\"map blocker hide Error\")\n                self.logger_file.log_exception(e)\n        except Exception as e:\n            self.logger_file.log(\"ERROR\", f\"OPen map window ERROR\")\n            self.logger_file.log_exception(e)\n\n        self.logger_file.log(\"INFO\", f\"Open map Window True\")\n\n    def restore_map_to_main(self):\n        \"\"\"Восстановить web_view в оригинальный контейнер при закрытии окна.\"\"\"\n        self.logger_file.log(\"INFO\", f\"Restore map to main\")\n        try:\n            try:\n                self.web_view.setParent(None)\n            except Exception as e:\n                self.logger_file.log(\"ERROR\", f\"Set parent None Error\")\n                self.logger_file.log_exception(e)\n\n            container = getattr(self, \"page_map\", None) or getattr(self, \"map\", None) or self\n            if container.layout() is None:\n                layout = QVBoxLayout(container)\n                layout.setContentsMargins(0, 0, 0, 0)\n                layout.setSpacing(0)\n            else:\n                layout = container.layout()\n\n            layout.addWidget(self.web_view)\n            self.web_view.show()\n\n            try:\n                self.web_view.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, True)\n                try:\n                    self.web_view.page().runJavaScript(\"window.AUTO_FOLLOW = true;\")\n                except Exception as e:\n                    self.logger_file.log(\"ERROR\", f\"Run auto follow js error\")\n                    self.logger_file.log_exception(e)\n                js_disable = \"\"\"\n                (function(){\n                    try{\n                        if (window.map) {\n                            if (map.scrollZoom && map.scrollZoom.disable) map.scrollZoom.disable();\n                            if (map.dragPan && map.dragPan.disable) map.dragPan.disable();\n                            if (map.touchZoomRotate && map.touchZoomRotate.disable) map.touchZoomRotate.disable();\n                        }\n                        if (typeof window.setInteractive === 'function') window.setInteractive(false);\n                    }catch(e){}\n                })();\n                \"\"\"\n                self.web_view.page().runJavaScript(js_disable)\n            except Exception as e:\n                self.logger_file.log(\"ERROR\", f\"Run js script map error restore map to main\")\n                self.logger_file.log_exception(e)\n\n            try:\n                self._map_blocker.setParent(container)\n                self._position_map_blocker()\n                self._map_blocker.show()\n            except Exception as e:\n                self.logger_file.log(\"ERROR\", f\"map blocker error\")\n                self.logger_file.log_exception(e)\n\n            self.map_on_window = False\n            try:\n                self.map_window.deleteLater()\n            except Exception as e:\n                self.logger_file.log(\"ERROR\", f\"delete layer map error\")\n                self.logger_file.log_exception(e)\n            \n            self.map_window = None\n            self.logger_file.log(\"INFO\", f\"Map window close\")\n        except Exception as e:\n            self.logger_file.log(\"ERROR\", f\"Restore map to main error\")\n            self.logger_file.log_exception(e)\n\n# d:\\ssd\\server\\GUI\\app\\views\\params.py\n\n    def _create_value_widget(self, param: dict):\n        ptype = param.get(\"type\")\n        value = param.get(\"value\")\n\n        if ptype == \"int\":\n            spin = QtWidgets.QSpinBox()\n            spin.setMaximum(999999)\n            spin.setMinimum(-999999)\n            spin.setValue(int(value))\n            return spin\n        elif ptype == \"float\":\n            dspin = QtWidgets.QDoubleSpinBox()\n            dspin.setDecimals(3)\n            dspin.setMaximum(999999.0)\n            dspin.setMinimum(-999999.0)\n            dspin.setValue(float(value))\n            return dspin\n        elif ptype == \"bool\":\n            chk = QtWidgets.QCheckBox()\n            chk.setChecked(bool(value))\n            return chk\n        elif ptype == \"color\":\n            btn = QtWidgets.QPushButton()\n            col = QtGui.QColor(*value)\n            btn.setStyleSheet(f\"background-color: {col.name()}\")\n            btn.clicked.connect(lambda _, b=btn: self._choose_color(b))\n            btn.setProperty(\"color_value\", value)\n            return btn\n        else:\n            edit = QtWidgets.QLineEdit(str(value))\n            return edit\n\n# d:\\ssd\\server\\GUI\\app\\utils\\preflight.py\n\n    def check_gst(self) -> bool:\n        \"\"\"\n        Проверяет наличие папки %APPDATA%/colibri/gst.\n        Если папка отсутствует или пуста — создаёт её и загружает из Gitea.\n        При любой ошибке полностью очищает папку.\n        \"\"\"\n        try:\n            appdata = os.getenv(\"APPDATA\") or str(Path.home() / \"AppData\" / \"Roaming\")\n            colibri_dir = Path(appdata) / \"colibri\"\n            gst_dir = colibri_dir / \"gst\"\n            print(\"Checking GST at\", gst_dir)\n            if gst_dir.exists() and any(gst_dir.iterdir()):\n                try:\n                    self.progress.emit(100, f\"GST found at {gst_dir}\")\n                except Exception:\n                    pass\n                return True\n            gst_dir.mkdir(parents=True, exist_ok=True)\n            BASES = [\n                \"http://10.2.64.253:3000/api/v1/repos/RuslanYK/colibri_bin\",\n                \"http://192.168.101.6:3000/api/v1/repos/RuslanYK/colibri_bin\",\n            ]\n            BRANCH = \"main\"\n            tmp_dir = gst_dir.parent / (gst_dir.name + \"_tmp\")\n            shutil.rmtree(tmp_dir, ignore_errors=True)\n            last_error = None\n            for base in BASES:\n                try:\n                    tmp_dir.mkdir(parents=True, exist_ok=True)\n                    download_dir(base, \"gst\", tmp_dir)\n                    shutil.rmtree(gst_dir, ignore_errors=True)\n                    shutil.move(str(tmp_dir), str(gst_dir))\n                    try:\n                        self.progress.emit(100, f\"GST successfully loaded at {gst_dir} (from {base})\")\n                    except Exception:\n                        pass\n                    return True\n                except Exception as e:\n                    last_error = e\n                    shutil.rmtree(tmp_dir, ignore_errors=True)\n                    print(f\"Failed to download from {base}: {e}\")\n                    continue\n            shutil.rmtree(gst_dir, ignore_errors=True)\n            try:\n                self.progress.emit(0, f\"Failed to load GST from all servers: {last_error}\")\n            except Exception:\n                pass\n            return False\n        except Exception as e:\n            try:\n                self.progress.emit(0, f\"Critical error in check_gst: {e}\")\n            except Exception:\n                pass\n            return False\n\n// d:\\ssd\\server\\GUI\\app\\web\\script.js\n\nfunction setupManualPointDrawing(altitude) {\n  let pointId = 1;\n  const finishBtn = document.createElement(\"button\");\n  finishBtn.textContent = \"✅ Завершить расстановку\";\n  finishBtn.style.position = \"absolute\";\n  finishBtn.style.top = \"10px\";\n  finishBtn.style.right = \"10px\";\n  finishBtn.style.zIndex = 9999;\n  document.body.appendChild(finishBtn);\n  map.on('click', onClickMapToAddPoint);\n  async function onClickMapToAddPoint(e) {\n    const lng = e.lngLat.lng;\n    const lat = e.lngLat.lat;\n    const abs_alt = await getElevationAt(lat, lng);\n    generatedPoints.push({ id: pointId, lng, lat, abs_alt, rel_alt: altitude });\n    updateGeneratedPointsOnMap();\n    pointId++;\n  }\n  function updateGeneratedPointsOnMap() {\n    const features = generatedPoints.map(pt => ({ type: 'Feature', geometry: { type: 'Point', coordinates: [pt.lng, pt.lat] }, properties: { id: pt.id.toString() } }));\n    const geojson = { type: 'FeatureCollection', features };\n    if (map.getSource(generatedSourceId)) {\n      map.getSource(generatedSourceId).setData(geojson);\n    } else {\n      map.addSource(generatedSourceId, { type: 'geojson', data: geojson });\n      map.addLayer({ id: generatedLayerId, type: 'circle', source: generatedSourceId, paint: { 'circle-radius': 5, 'circle-color': '#00ff00' } });\n      map.addLayer({ id: generatedLabelLayerId, type: 'symbol', source: generatedSourceId, layout: { 'text-field': ['get', 'id'], 'text-size': 12, 'text-offset': [0, 0.6], 'text-anchor': 'top' }, paint: { 'text-color': '#000000' } });\n      setupPointInteractions();\n    }\n  }\n  finishBtn.onclick = () => {\n    map.off('click', onClickMapToAddPoint);\n    finishBtn.remove();\n    updateStatus(`✅ Расстановка завершена. Добавлено ${generatedPoints.length} точек.`);\n    if (mapBridge && mapBridge.receiveManualPoints) {\n      mapBridge.receiveManualPoints(generatedPoints, altitude);\n    }\n  };\n}"
+  },
+  {
+    "id": "ai-tracking",
+    "title": "AI Tracking System",
+    "description": "Система трекинга объектов с использованием нейросетей и компьютерного зрения.",
+    "fullDescription": "Разработана система трекинга объектов на базе нейросетей и компьютерного зрения. Система способна идентифицировать и отслеживать объекты в реальном времени, используя алгоритмы глубокого обучения для распознавания и классификации.\n\nРеализована интеграция с видеопотоком, что позволяет применять систему в различных областях, таких как безопасность, мониторинг и автоматизация. Проект демонстрирует навыки работы с нейросетями, обработкой изображений и разработкой систем реального времени.",
+    "image": "/ai-tracking/ai1.jpg",
+    "tags": ["Python", "Computer Vision", "Deep Learning"],
+    "media": [
+      { "type": "image", "url": "/ai-tracking/ai1.jpg" },
+      { "type": "image", "url": "/ai-tracking/ai2.jpg" },
+      { "type": "video", "url": "/ai-tracking/ai.MOV" }
+    ],
+    "github": "https://github.com/failway/",
+    "private": true,
+    "status": "Completed",
+    "date": "2025-08-22",
+    "lang": "Python",
+    "code": ""
+  },
+  {
+    "id": "ardupilot-fork",
+    "title": "ArduPilot Fork",
+    "description": "Форк ArduPilot с расширенной функциональностью для управления беспилотными летательными аппаратами.",
+    "fullDescription": "Разработан форк ArduPilot с глубоким погружением в управление мультикоптерами и tiltrotor-дронами. Основная задача заключалась в интеграции нового протокола CAN/Cyphal для обмена данными между контроллером полёта и периферийными устройствами, включая сервоприводы и датчики. Были внесены изменения в логику работы Tiltrotor, что позволило улучшить управление переходными режимами и стабилизацию аппарата.\n\nРеализована возможность обновления позиции EKF в реальном времени для коррекции навигации и повышения точности полёта. Добавлена обратная связь от CAN-сервоприводов для контроля и диагностики актуаторов. Введена система компенсации PID в зависимости от состояния батареи и воздушной скорости, что обеспечивает более стабильный и предсказуемый контроль дрона при изменении нагрузки и условий полёта.\n\nКроме того, проект включал оптимизацию логики автопилота, улучшение обработки телеметрии, расширение возможностей мониторинга и отладки через MAVLink. Всё это позволило получить более точное управление, повысить надежность системы и расширить функционал для профессиональных миссий с VTOL и мультикоптерами. Навыки, продемонстрированные в проекте, включают работу с низкоуровневыми протоколами, алгоритмами управления, встроенными системами реального времени и интеграцию аппаратных компонентов через CAN bus.",
+    "image": "/ardupilot/ard1.jpg",
+    "tags": ["C++", "ArduPilot", "CAN", "Cyphal"],
+    "media": [
+      { "type": "image", "url": "/ardupilot/ard1.jpg" }
+    ],
+    "github": "https://github.com/failway/",
+    "private": true,
+    "status": "Completed",
+    "date": "2025-09-15",
+    "lang": "C/C++",
+    "code": ""
+  },
+  {
+    "id": "plugin-for-mp",
+    "title": "Плагин для Mission Planner",
+    "description": "Плагин для Mission Planner, добавляющий коррекцию инерциальной позиции при отсутствии GPS.",
+    "fullDescription": "Разработан плагин для Mission Planner, который расширяет функциональность управления дронами, позволяя корректировать позицию в полёте в реальном времени. Плагин интегрируется с MAVLink и обеспечивает приём данных с внешних устройств, обработку телеметрии и динамическое обновление позиции EKF для повышения точности навигации. Также реализована обратная связь от CAN-сервоприводов, компенсация PID по батарейке и воздушной скорости, поддержка новых режимов Tiltrotor и дополнительные инструменты для мониторинга и отладки. Проект демонстрирует навыки работы с C#/Python, расширением Mission Planner, обработкой полётной телеметрии и интеграцией внешних аппаратных модулей.",
+    "image": "/mp/mp1.jpg",
+    "tags": ["C#", "Python", "Mission Planner", "MAVLink"],
+    "media": [
+      { "type": "image", "url": "/mp/mp1.jpg" }
+    ],
+    "github": "https://github.com/failway/PluginExtNav",
+    "private": false,
+    "status": "Completed",
+    "date": "2025-10-10",
+    "lang": "C#",
+    "code": ""
+  },
+  {
+    "id": "vtb-backend",
+    "title": "Backend для ВТБ-API (Хакатон ВТБ)",
+    "description": "Разработка backend-сервиса для интеграции с ВТБ-API в рамках хакатона ВТБ.",
+    "fullDescription": "Разработан backend-сервис на Python для интеграции с ВТБ-API в рамках хакатона ВТБ. Сервис обеспечивает аутентификацию, обработку запросов и взаимодействие с API банка для получения финансовых данных, управления счетами и выполнения транзакций. Реализована логика обработки ошибок, оптимизация производительности и обеспечение безопасности данных. Проект демонстрирует навыки работы с API, разработкой backend-сервисов и интеграцией с банковскими системами.",
+    "image": "/vtb/vtb1.jpg",
+    "tags": ["Python", "ВТБ-API", "Backend", "FastAPI", "MySQL"],
+    "media": [
+      { "type": "image", "url": "/vtb/vtb1.jpg" },
+      { "type": "video", "url": "/vtb/vtb_vid1.mp4" }
+    ],
+    "github": "https://github.com/failway/vtb-api",
+    "private": false,
+    "status": "Completed",
+    "date": "2025-12-05",
+    "lang": "Python",
+    "code": ""
+  },
+  {
+    "id": "task-tracker",
+    "title": "Task Tracker",
+    "description": "Система трекинга задач для управления проектами и отслеживания прогресса.",
+    "fullDescription": "Разработана backend система трекинга задач на Python с использованием FastAPI. Система позволяет создавать, назначать и отслеживать задачи в рамках проектов, обеспечивая удобный интерфейс для управления рабочими процессами. Реализованы функции фильтрации, сортировки и поиска задач, а также интеграция с внешними сервисами для уведомлений и отчетности. Проект демонстрирует навыки разработки веб-приложений, управления данными и оптимизации пользовательского опыта.",
+    "image": "/tt/tt1.png",
+    "tags": ["Python", "FastAPI", "MySQL", "Task Tracker"],
+    "media": [
+      { "type": "image", "url": "/tt/tt1.png" },
+      { "type": "image", "url": "/tt/tt2.png" },
+      { "type": "image", "url": "/tt/tt3.png" },
+      { "type": "image", "url": "/tt/tt4.png" }
+    ],
+    "github": "https://github.com/failway/flowtrack",
+    "private": false,
+    "status": "Proccessing",
+    "date": "2026-01-15",
+    "lang": "Python",
+    "code": ""
+  }
+
+]

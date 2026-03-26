@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background-start: rgb(2, 6, 23);
+  --color-background-end: rgb(0, 0, 0);
+}
+
+:root {
+  --foreground-rgb: 255, 255, 255;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+    to bottom,
+    var(--color-background-start),
+    var(--color-background-end)
+  );
+  min-height: 100vh;
+}
+
+@utility text-gradient {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400;
+}
+
+@utility glass {
+  @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .motion-section-fallback {
+    animation: fadeIn 0.5s ease-in forwards;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
