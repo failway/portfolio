@@ -25,7 +25,7 @@ export default function Hero() {
       >
         <div className="relative w-full h-full rounded-full overflow-hidden">
           <Image
-            src="/me.jpg"
+            src="/portfolio/me.jpg"
             alt="My Photo"
             fill
             className="object-cover"

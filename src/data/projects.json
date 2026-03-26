@@ -4,12 +4,12 @@
     "title": "Can-Servo",
     "description": "Серво-система с управлением по CAN (Cyphal) и обратной связью в реальном времени.",
     "fullDescription": "Разработана серво-система реального времени на базе RP2040 с использованием двух ядер для разделения задач. Первое ядро обрабатывает CAN-коммуникацию по протоколу Cyphal, принимая команды позиционирования от внешних устройств. Второе ядро отвечает за управление двигателем через библиотеку SimpleFOC, обеспечивая точное, плавное и стабильное управление.\n\nРеализована двусторонняя связь: система передаёт телеметрию, включая текущее положение и заданную позицию, что позволяет интегрировать устройство в распределённые системы управления и мониторинга.\n\nОсобое внимание уделено синхронизации между ядрами, обработке данных в реальном времени и устойчивости к нагрузке. Проект демонстрирует навыки работы с embedded-системами, CAN-протоколами, многопоточностью и управлением электродвигателями.",
-    "image": "/can-servo-control/cnsrv1.jpg",
+    "image": "/portfolio/can-servo-control/cnsrv1.jpg",
     "tags": ["RP2040", "CAN", "C/C++", "SimpleFOC", "Cyphal"],
       "media": [
-      { "type": "image", "url": "/can-servo-control/cnsrv1.jpg" },
-      { "type": "video", "url": "/can-servo-control/cnsrv_vid.mp4" },
-      { "type": "image", "url": "/can-servo-control/cnsrv2.jpg" }
+      { "type": "image", "url": "/portfolio/can-servo-control/cnsrv1.jpg" },
+      { "type": "video", "url": "/portfolio/can-servo-control/cnsrv_vid.mp4" },
+      { "type": "image", "url": "/portfolio/can-servo-control/cnsrv2.jpg" }
     ],
     "github": "https://github.com/failway/",
     "private": true,
@@ -23,11 +23,11 @@
     "title": "Telegram finance management bot",
     "description": "Телеграм-бот для управления финансами студии звукозаписи.",
     "fullDescription": "Разработан Telegram-бот на Python с использованием aiogram 3 для автоматизации финансового учёта студии. Пользователи могут вносить данные о доходах и расходах, формируя единую систему контроля финансовых операций.\n\nРеализована ролевая модель (администратор / сотрудник), обеспечивающая разграничение доступа и управление данными. Бот поддерживает сбор и хранение информации, автоматическое формирование отчётов и экспорт данных в Excel в любой момент времени.\n\nРешение значительно упрощает внутренние процессы, снижает количество ручных операций и повышает прозрачность финансового учёта.",
-    "image": "/tgbot/tgbot2.png",
+    "image": "/portfolio/tgbot/tgbot2.png",
     "tags": ["Python", "Telegram Bot", "aiogram", "Excel"],
     "media": [
-      { "type": "image", "url": "/tgbot/tgbot2.png" },
-      { "type": "image", "url": "/tgbot/tgbot_1.png" }
+      { "type": "image", "url": "/portfolio/tgbot/tgbot2.png" },
+      { "type": "image", "url": "/portfolio/tgbot/tgbot_1.png" }
     ],
     "github": "https://github.com/failway/",
     "private": true,
@@ -40,14 +40,14 @@
     "id": "site-for-aviapanel",
     "title": "Сайт для авиа-приборов",
     "description": "Сайт для симуляторных авиаприборов.",
-    "image": "/site-avia/avia1.jpg",
+    "image": "/portfolio/site-avia/avia1.jpg",
     "fullDescription": "Разработан backend сайта для продажи симуляторных авиаприборов на Django. Реализована ключевая e-commerce логика: каталог товаров, корзина, оформление заказов и пользовательские страницы.\n\nИнтегрированы сторонние сервисы — API онлайн-кассы для обработки платежей и API CDEK для расчёта стоимости и управления доставкой.\n\nПроект отражает опыт построения серверной логики, интеграции внешних API и разработки коммерческих веб-сервисов.",
     "tags": ["HTML", "CSS", "Python", "Django"],
     "media": [
-      { "type": "image", "url": "/site-avia/avia1.jpg" },
-      { "type": "image", "url": "/site-avia/avia2.png" },
-      { "type": "image", "url": "/site-avia/avia3.png" },
-      { "type": "image", "url": "/site-avia/avia4.png" }
+      { "type": "image", "url": "/portfolio/site-avia/avia1.jpg" },
+      { "type": "image", "url": "/portfolio/site-avia/avia2.png" },
+      { "type": "image", "url": "/portfolio/site-avia/avia3.png" },
+      { "type": "image", "url": "/portfolio/site-avia/avia4.png" }
     ],
     "github": "https://github.com/failway/",
     "private": true,
@@ -61,12 +61,12 @@
     "title": "GUI для VTOL",
     "description": "GUI-приложение для управления VTOL-дроном и визуализации телеметрии.",
     "fullDescription": "Разработано GUI-приложение на PyQt6 для управления VTOL-дроном. Программа подключается к дрону через MAVLink, позволяет ставить точки на карте, задавать миссии через собственные расширения и получать полную телеметрию.\n\nСинхронизация с Jetson на борту, выбор объектов для трекинга, передача видео в реальном времени через OpenCV + GStreamer, а также визуализация 3D-модели дрона с отображением текущей позиции и углов Yaw, Pitch, Roll.\n\nПроект демонстрирует опыт разработки GUI, работы с аппаратурой и протоколами связи, а также реализацию real-time визуализации и управления сложными системами.",
-    "image": "/gui/gui2.png",
+    "image": "/portfolio/gui/gui2.png",
     "tags": ["Python", "PyQt", "MAVLink", "JS", "OpenCV"],
     "media": [
-      { "type": "image", "url": "/gui/gui2.png" },
-      { "type": "image", "url": "/gui/gui1.png" },
-      { "type": "video", "url": "/gui/gui_vid1.mp4" }
+      { "type": "image", "url": "/portfolio/gui/gui2.png" },
+      { "type": "image", "url": "/portfolio/gui/gui1.png" },
+      { "type": "video", "url": "/portfolio/gui/gui_vid1.mp4" }
     ],
     "github": "https://github.com/failway/colibri_gui_release",
     "private": false,
@@ -80,12 +80,12 @@
     "title": "AI Tracking System",
     "description": "Система трекинга объектов с использованием нейросетей и компьютерного зрения.",
     "fullDescription": "Разработана система трекинга объектов на базе нейросетей и компьютерного зрения. Система способна идентифицировать и отслеживать объекты в реальном времени, используя алгоритмы глубокого обучения для распознавания и классификации.\n\nРеализована интеграция с видеопотоком, что позволяет применять систему в различных областях, таких как безопасность, мониторинг и автоматизация. Проект демонстрирует навыки работы с нейросетями, обработкой изображений и разработкой систем реального времени.",
-    "image": "/ai-tracking/ai1.jpg",
+    "image": "/portfolio/ai-tracking/ai1.jpg",
     "tags": ["Python", "Computer Vision", "Deep Learning"],
     "media": [
-      { "type": "image", "url": "/ai-tracking/ai1.jpg" },
-      { "type": "image", "url": "/ai-tracking/ai2.jpg" },
-      { "type": "video", "url": "/ai-tracking/ai.MOV" }
+      { "type": "image", "url": "/portfolio/ai-tracking/ai1.jpg" },
+      { "type": "image", "url": "/portfolio/ai-tracking/ai2.jpg" },
+      { "type": "video", "url": "/portfolio/ai-tracking/ai.MOV" }
     ],
     "github": "https://github.com/failway/",
     "private": true,
@@ -99,10 +99,10 @@
     "title": "ArduPilot Fork",
     "description": "Форк ArduPilot с расширенной функциональностью для управления беспилотными летательными аппаратами.",
     "fullDescription": "Разработан форк ArduPilot с глубоким погружением в управление мультикоптерами и tiltrotor-дронами. Основная задача заключалась в интеграции нового протокола CAN/Cyphal для обмена данными между контроллером полёта и периферийными устройствами, включая сервоприводы и датчики. Были внесены изменения в логику работы Tiltrotor, что позволило улучшить управление переходными режимами и стабилизацию аппарата.\n\nРеализована возможность обновления позиции EKF в реальном времени для коррекции навигации и повышения точности полёта. Добавлена обратная связь от CAN-сервоприводов для контроля и диагностики актуаторов. Введена система компенсации PID в зависимости от состояния батареи и воздушной скорости, что обеспечивает более стабильный и предсказуемый контроль дрона при изменении нагрузки и условий полёта.\n\nКроме того, проект включал оптимизацию логики автопилота, улучшение обработки телеметрии, расширение возможностей мониторинга и отладки через MAVLink. Всё это позволило получить более точное управление, повысить надежность системы и расширить функционал для профессиональных миссий с VTOL и мультикоптерами. Навыки, продемонстрированные в проекте, включают работу с низкоуровневыми протоколами, алгоритмами управления, встроенными системами реального времени и интеграцию аппаратных компонентов через CAN bus.",
-    "image": "/ardupilot/ard1.jpg",
+    "image": "/portfolio/ardupilot/ard1.jpg",
     "tags": ["C++", "ArduPilot", "CAN", "Cyphal"],
     "media": [
-      { "type": "image", "url": "/ardupilot/ard1.jpg" }
+      { "type": "image", "url": "/portfolio/ardupilot/ard1.jpg" }
     ],
     "github": "https://github.com/failway/",
     "private": true,
@@ -116,10 +116,10 @@
     "title": "Плагин для Mission Planner",
     "description": "Плагин для Mission Planner, добавляющий коррекцию инерциальной позиции при отсутствии GPS.",
     "fullDescription": "Разработан плагин для Mission Planner, который расширяет функциональность управления дронами, позволяя корректировать позицию в полёте в реальном времени. Плагин интегрируется с MAVLink и обеспечивает приём данных с внешних устройств, обработку телеметрии и динамическое обновление позиции EKF для повышения точности навигации. Также реализована обратная связь от CAN-сервоприводов, компенсация PID по батарейке и воздушной скорости, поддержка новых режимов Tiltrotor и дополнительные инструменты для мониторинга и отладки. Проект демонстрирует навыки работы с C#/Python, расширением Mission Planner, обработкой полётной телеметрии и интеграцией внешних аппаратных модулей.",
-    "image": "/mp/mp1.jpg",
+    "image": "/portfolio/mp/mp1.jpg",
     "tags": ["C#", "Python", "Mission Planner", "MAVLink"],
     "media": [
-      { "type": "image", "url": "/mp/mp1.jpg" }
+      { "type": "image", "url": "/portfolio/mp/mp1.jpg" }
     ],
     "github": "https://github.com/failway/PluginExtNav",
     "private": false,
@@ -133,11 +133,11 @@
     "title": "Backend для ВТБ-API (Хакатон ВТБ)",
     "description": "Разработка backend-сервиса для интеграции с ВТБ-API в рамках хакатона ВТБ.",
     "fullDescription": "Разработан backend-сервис на Python для интеграции с ВТБ-API в рамках хакатона ВТБ. Сервис обеспечивает аутентификацию, обработку запросов и взаимодействие с API банка для получения финансовых данных, управления счетами и выполнения транзакций. Реализована логика обработки ошибок, оптимизация производительности и обеспечение безопасности данных. Проект демонстрирует навыки работы с API, разработкой backend-сервисов и интеграцией с банковскими системами.",
-    "image": "/vtb/vtb1.jpg",
+    "image": "/portfolio/vtb/vtb1.jpg",
     "tags": ["Python", "ВТБ-API", "Backend", "FastAPI", "MySQL"],
     "media": [
-      { "type": "image", "url": "/vtb/vtb1.jpg" },
-      { "type": "video", "url": "/vtb/vtb_vid1.mp4" }
+      { "type": "image", "url": "/portfolio/vtb/vtb1.jpg" },
+      { "type": "video", "url": "/portfolio/vtb/vtb_vid1.mp4" }
     ],
     "github": "https://github.com/failway/vtb-api",
     "private": false,
@@ -151,13 +151,13 @@
     "title": "Task Tracker",
     "description": "Система трекинга задач для управления проектами и отслеживания прогресса.",
     "fullDescription": "Разработана backend система трекинга задач на Python с использованием FastAPI. Система позволяет создавать, назначать и отслеживать задачи в рамках проектов, обеспечивая удобный интерфейс для управления рабочими процессами. Реализованы функции фильтрации, сортировки и поиска задач, а также интеграция с внешними сервисами для уведомлений и отчетности. Проект демонстрирует навыки разработки веб-приложений, управления данными и оптимизации пользовательского опыта.",
-    "image": "/tt/tt1.png",
+    "image": "/portfolio/tt/tt1.png",
     "tags": ["Python", "FastAPI", "MySQL", "Task Tracker"],
     "media": [
-      { "type": "image", "url": "/tt/tt1.png" },
-      { "type": "image", "url": "/tt/tt2.png" },
-      { "type": "image", "url": "/tt/tt3.png" },
-      { "type": "image", "url": "/tt/tt4.png" }
+      { "type": "image", "url": "/portfolio/tt/tt1.png" },
+      { "type": "image", "url": "/portfolio/tt/tt2.png" },
+      { "type": "image", "url": "/portfolio/tt/tt3.png" },
+      { "type": "image", "url": "/portfolio/tt/tt4.png" }
     ],
     "github": "https://github.com/failway/flowtrack",
     "private": false,
