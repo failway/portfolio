@@ -1,6 +1,5 @@
 "use client";
-import { useEffect, useRef } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { X, Award, ChevronLeft, ChevronRight } from "lucide-react";
@@ -14,42 +13,51 @@ const certificates = [
 ];
 
 export default function Certificates() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const certParam = searchParams.get("cert");
-  const selectedIndex = certParam
-    ? certificates.findIndex((c) => c.id === certParam)
-    : -1;
+  const [selectedIndex, setSelectedIndex] = useState<number>(-1);
 
-  const routerRef = useRef(router);
-  useEffect(() => { routerRef.current = router; }, [router]);
-
-  const openModal = (index: number) => {
-    router.push(`?cert=${certificates[index].id}`, { scroll: false });
-  };
-
-    const closeModal = () => {
-    router.push("/", { scroll: false });
-    };
-  const prev = () => {
+  useEffect(() => {
     const param = new URLSearchParams(window.location.search).get("cert");
     const idx = param ? certificates.findIndex((c) => c.id === param) : -1;
-    if (idx < 0) return;
-    const newIndex = (idx - 1 + certificates.length) % certificates.length;
-    routerRef.current.push(`?cert=${certificates[newIndex].id}`, { scroll: false });
+    if (idx >= 0) setSelectedIndex(idx);
+  }, []);
+
+  const openModal = (index: number) => {
+    setSelectedIndex(index);
+    setTimeout(() => {
+      window.history.pushState(null, "", `?cert=${certificates[index].id}`);
+    }, 0);
+  };
+
+  const closeModal = () => {
+    setSelectedIndex(-1);
+    setTimeout(() => {
+      window.history.pushState(null, "", window.location.pathname);
+    }, 0);
+  };
+
+  const prev = () => {
+    setSelectedIndex((cur) => {
+      const newIndex = (cur - 1 + certificates.length) % certificates.length;
+      setTimeout(() => {
+        window.history.pushState(null, "", `?cert=${certificates[newIndex].id}`);
+      }, 0);
+      return newIndex;
+    });
   };
 
   const next = () => {
-    const param = new URLSearchParams(window.location.search).get("cert");
-    const idx = param ? certificates.findIndex((c) => c.id === param) : -1;
-    if (idx < 0) return;
-    const newIndex = (idx + 1) % certificates.length;
-    routerRef.current.push(`?cert=${certificates[newIndex].id}`, { scroll: false });
+    setSelectedIndex((cur) => {
+      const newIndex = (cur + 1) % certificates.length;
+      setTimeout(() => {
+        window.history.pushState(null, "", `?cert=${certificates[newIndex].id}`);
+      }, 0);
+      return newIndex;
+    });
   };
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") routerRef.current.push("/", { scroll: false });
+      if (e.key === "Escape") closeModal();
       if (e.key === "ArrowLeft") prev();
       if (e.key === "ArrowRight") next();
     };
