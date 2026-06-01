@@ -1,5 +1,5 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
@@ -17,42 +17,52 @@ export default function Certificates() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const certParam = searchParams.get("cert");
-  const selectedIndex = certParam ? certificates.findIndex((c) => c.id === certParam) : -1;
- 
+  const selectedIndex = certParam
+    ? certificates.findIndex((c) => c.id === certParam)
+    : -1;
+
+  const routerRef = useRef(router);
+  useEffect(() => { routerRef.current = router; }, [router]);
+
   const openModal = (index: number) => {
     router.push(`?cert=${certificates[index].id}`, { scroll: false });
   };
- 
-  const closeModal = () => {
-    router.push("?", { scroll: false });
-  };
- 
+
+    const closeModal = () => {
+    router.push("/", { scroll: false });
+    };
   const prev = () => {
-    const newIndex = (selectedIndex - 1 + certificates.length) % certificates.length;
-    router.push(`?cert=${certificates[newIndex].id}`, { scroll: false });
+    const param = new URLSearchParams(window.location.search).get("cert");
+    const idx = param ? certificates.findIndex((c) => c.id === param) : -1;
+    if (idx < 0) return;
+    const newIndex = (idx - 1 + certificates.length) % certificates.length;
+    routerRef.current.push(`?cert=${certificates[newIndex].id}`, { scroll: false });
   };
- 
+
   const next = () => {
-    const newIndex = (selectedIndex + 1) % certificates.length;
-    router.push(`?cert=${certificates[newIndex].id}`, { scroll: false });
+    const param = new URLSearchParams(window.location.search).get("cert");
+    const idx = param ? certificates.findIndex((c) => c.id === param) : -1;
+    if (idx < 0) return;
+    const newIndex = (idx + 1) % certificates.length;
+    routerRef.current.push(`?cert=${certificates[newIndex].id}`, { scroll: false });
   };
- 
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") closeModal();
-      if (e.key === "ArrowLeft" && selectedIndex >= 0) prev();
-      if (e.key === "ArrowRight" && selectedIndex >= 0) next();
+      if (e.key === "Escape") routerRef.current.push("/", { scroll: false });
+      if (e.key === "ArrowLeft") prev();
+      if (e.key === "ArrowRight") next();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [selectedIndex]);
- 
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const copyLink = () => {
     if (selectedIndex < 0) return;
     const url = `${window.location.origin}/portfolio?cert=${certificates[selectedIndex].id}`;
     navigator.clipboard.writeText(url);
   };
- 
+
   return (
     <section id="certificates" className="mt-32 scroll-mt-28">
       <motion.h2
@@ -63,7 +73,7 @@ export default function Certificates() {
       >
         Сертификаты
       </motion.h2>
- 
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {certificates.map((cert, index) => (
           <motion.div
@@ -94,7 +104,7 @@ export default function Certificates() {
                 </span>
               </div>
             </div>
- 
+
             <div className="p-5 flex items-center gap-3">
               <Award size={18} className="text-blue-400 shrink-0" />
               <span className="text-slate-300 text-sm font-medium group-hover:text-blue-400 transition-colors duration-300">
@@ -104,7 +114,7 @@ export default function Certificates() {
           </motion.div>
         ))}
       </div>
- 
+
       <AnimatePresence>
         {selectedIndex >= 0 && (
           <motion.div
@@ -131,7 +141,7 @@ export default function Certificates() {
                   sizes="100vw"
                 />
               </div>
- 
+
               <div className="p-4 flex items-center justify-between border-t border-white/10">
                 <span className="text-slate-400 text-sm flex items-center gap-2">
                   <Award size={16} className="text-blue-400" />
@@ -149,7 +159,7 @@ export default function Certificates() {
                   </span>
                 </div>
               </div>
- 
+
               <button
                 onClick={prev}
                 className="absolute left-3 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-blue-500/30 border border-white/10 rounded-full transition-colors duration-200"
@@ -162,7 +172,7 @@ export default function Certificates() {
               >
                 <ChevronRight size={20} />
               </button>
- 
+
               <button
                 onClick={closeModal}
                 className="absolute top-3 right-3 p-2 bg-black/50 hover:bg-red-500/30 border border-white/10 rounded-full transition-colors duration-200"
