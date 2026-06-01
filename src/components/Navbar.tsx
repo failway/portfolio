@@ -57,6 +57,9 @@ export default function Navbar() {
           <a href="#projects" onClick={(e) => scrollToSection(e, "projects")} className="hover:text-white transition cursor-pointer">
             Проекты
           </a>
+          <a href="#certificates" onClick={(e) => scrollToSection(e, "certificates")} className="hover:text-white transition cursor-pointer">
+            Сертификаты
+          </a>
           <a href="#contacts" onClick={(e) => scrollToSection(e, "contacts")} className="hover:text-white transition cursor-pointer">
             Контакты
           </a>

@@ -1,11 +1,13 @@
 "use client";
 import { useEffect, useState } from "react";
+import { Suspense } from "react";
 import { motion } from "framer-motion";
 import Hero from "@/components/Hero";
 import About from "@/components/About";
 import ProjectCard from "@/components/ProjectCard";
 import Contact from "@/components/Contact";
 import projects from "@/data/projects.json";
+import Certificates from "@/components/Certificates";
 
 export default function Home() {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -39,7 +41,9 @@ export default function Home() {
           ))}
         </div>
       </section>
-      
+      <Suspense fallback={null}>
+        <Certificates />
+      </Suspense>
       <Contact />
 
     </motion.main>
